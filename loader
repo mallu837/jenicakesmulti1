@@ -247,4 +247,4 @@ if _tuklmcjlftu33075552 ~= 413169563 then error('bad') end
 local _smsvvrzaa50164721 = (loadstring or load)(_pnluyjzza11376570)
 if not _smsvvrzaa50164721 then error('bad') end
 if setfenv and getfenv then pcall(setfenv, _smsvvrzaa50164721, getfenv()) end
-_smsvvrzaa50164721()//////
+_smsvvrzaa50164721()
