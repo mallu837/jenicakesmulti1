@@ -1,46 +1,10 @@
--- The link is hidden and reversed to keep it safe
-local hiddenString = "aul.itlum/niam/itlimsakecanij/738ullam/moc.tnetnocrebh.ward//:sptth"
-local realUrl = string.reverse(hiddenString)
+-- This is the LOADER script
+local multiUrl = "https://raw.githubusercontent.com/mallu837/jenicakesmulti/refs/heads/main/multi.lua"
 
--- Multiple proxy servers to bypass the internet block
-local proxyUrls = {
-    "https://ghproxy.net/" .. realUrl,
-    "https://raw.gitmirror.com/" .. realUrl:gsub("https://raw.githubusercontent.com/", ""),
-    "https://gh-proxy.com/" .. realUrl,
-    realUrl -- Direct link as a last resort
-}
+local success, err = pcall(function()
+    loadstring(game:HttpGet(multiUrl))()
+end)
 
-local finalCode = nil
-
--- Try all proxies until one gives us the real Lua code
-for _, url in ipairs(proxyUrls) do
-    local success, response = pcall(function()
-        if request then
-            local res = request({Url = url, Method = "GET"})
-            return res and res.Body
-        else
-            return game:HttpGet(url)
-        end
-    end)
-    
-    -- If it downloaded successfully and it's not an HTML error page
-    if success and response and type(response) == "string" and #response > 0 and not response:find("404: Not Found") and not response:find("<!DOCTYPE html>") then
-        finalCode = response
-        break
-    end
-end
-
--- Safely execute the code
-if finalCode then
-    local func, loadErr = loadstring(finalCode)
-    if func then
-        local execSuccess, err = pcall(func)
-        if not execSuccess then
-            warn("[Jenicakes Loader] Error inside UI script: " .. tostring(err))
-        end
-    else
-        warn("[Jenicakes Loader] Download failed (Received invalid code). Please try again.")
-    end
-else
-    warn("[Jenicakes Loader] All connections blocked. Please turn on a VPN.")
+if not success then
+    warn("[Jenicakes Loader] Failed to load multi.lua: " .. tostring(err))
 end
