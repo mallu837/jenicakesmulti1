@@ -21,7 +21,14 @@ end
 
 local LogoId = GetAssetImage(RawAssetId)
 
-local targetParent = (gethui and gethui()) or PlayerGui
+-- 修复 1: 安全获取 targetParent，防止 Delta 不支持 gethui 导致报错
+local targetParent = PlayerGui
+if gethui then
+    local ok, res = pcall(gethui)
+    if ok and res then
+        targetParent = res
+    end
+end
 
 if targetParent:FindFirstChild("JenAntiHitGui") then
     targetParent.JenAntiHitGui:Destroy()
@@ -292,7 +299,6 @@ keyContainer.BackgroundTransparency = 1
 keyContainer.Visible = false
 keyContainer.Parent = mainFrame
 
--- Discord link — plain text look, copies full invite URL on click
 local discordLabel = Instance.new("TextButton")
 discordLabel.Size = UDim2.new(1, -12, 0, 16)
 discordLabel.Position = UDim2.new(0, 6, 1, -20)
@@ -306,8 +312,13 @@ discordLabel.TextTruncate = Enum.TextTruncate.AtEnd
 discordLabel.AutoButtonColor = false
 discordLabel.Parent = mainFrame
 
+-- 修复 2: 安全调用剪贴板，防止报错
 discordLabel.MouseButton1Click:Connect(function()
-    setclipboard("https://discord.gg/GFZYsspybS")
+    if setclipboard then
+        pcall(setclipboard, "https://discord.gg/GFZYsspybS")
+    else
+        warn("你的执行器不支持自动复制剪贴板")
+    end
 end)
 
 tabKeylessBtn.MouseButton1Click:Connect(function()
@@ -434,10 +445,21 @@ local function BuildList(container, entries)
         row.MouseEnter:Connect(function() row.BackgroundTransparency = 0.1 end)
         row.MouseLeave:Connect(function() row.BackgroundTransparency = 0.3 end)
 
+        -- 修复 3: 安全执行外部脚本，防止 loadstring 报错导致整体崩溃
         local function runScript()
             local savedGui = screenGui
             local ok, err = pcall(function()
-                loadstring(game:HttpGet(entry.url, true))()
+                local fetchedCode = game:HttpGet(entry.url, true)
+                if fetchedCode then
+                    local func, loadErr = loadstring(fetchedCode)
+                    if func then
+                        func()
+                    else
+                        warn("[JenHub] Loadstring error: " .. tostring(loadErr))
+                    end
+                else
+                    warn("[JenHub] Failed to fetch code from " .. entry.name)
+                end
             end)
             if savedGui and not savedGui.Parent then
                 savedGui.Parent = targetParent
